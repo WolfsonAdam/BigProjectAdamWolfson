@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =  -Wall 
+CFLAGS =  -ansi -Wall -pedantic
 LDFLAGS = -lm  # Add this line to link the math library
 
 all: program

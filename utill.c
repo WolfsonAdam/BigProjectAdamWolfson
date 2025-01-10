@@ -51,7 +51,7 @@ void get_word(char * line,char * word) {
 short reservedWordCheck(char * word) {
     int i;
     short result;
-    result = 1;
+    
     /* List of reserved register names */
     const char *registers[TOTAL_REGISTERS] = {
         "r0",
@@ -63,6 +63,7 @@ short reservedWordCheck(char * word) {
         "r6",
         "r7"
     };
+    /* List of reserved command names */
     const char *commands[TOTAL_COMMANDS]={
         "mov",
         "cmp",
@@ -80,6 +81,7 @@ short reservedWordCheck(char * word) {
         "prn",
         "rts",
         "stop"};
+        result = 1;
     for(i = 0 ; i < TOTAL_COMMANDS ; i++ ){
         if( strcmp(word , commands[i] ) == 0){
             /* If the label matches a command, print an error and mark as invalid */

@@ -3,9 +3,10 @@
 
 void add_to_macro_list(MACRO_LIST_NODE ** head ,char * macro_name ,MACRO_CONTENT_NODE * head_content) {
     MACRO_LIST_NODE * ptr;
+    MACRO_LIST_NODE * new_node;
     ptr = NULL;
     /* Allocate memory for a new macro node */
-    MACRO_LIST_NODE * new_node = my_malloc(sizeof(MACRO_LIST_NODE));
+    new_node = my_malloc(sizeof(MACRO_LIST_NODE));
     memset(new_node->macro_name , '\0',MAXLINE);
 
     strcpy( new_node->macro_name , macro_name);
