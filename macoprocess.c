@@ -123,7 +123,7 @@ short Macro_Name_Check(char * word ,MACRO_LIST_NODE * head , int line_count) {
     short result = 1,endchecks=0;
     int i = 0,len;
     len = strlen(word);
-    if(word[0] == '\n') {
+    if(word[0] == '\0') {
         printf("missing macro name error in line %d",line_count);
         result= 0;
         endchecks=1;
