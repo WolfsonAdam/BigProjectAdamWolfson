@@ -106,7 +106,7 @@ void add_content_to_list(MACRO_CONTENT_NODE ** head_content , char *line_to_add)
  head Pointer to the macro list head.
  return The type of the line as an integer value.
  */
-int line_type(char * word , MACRO_LIST_NODE *head );
+int line_type(char * line , MACRO_LIST_NODE *head );
 
 /*
  This function frees all the memory used by the MACRO_CONTENT linked list.
@@ -142,7 +142,7 @@ short Macro_Name_Check(char * word ,MACRO_LIST_NODE * head , int line_count);
  This function reads an assembly source file, processes macros, and writes the
  processed content to a new file with ".am" suffix. It also handles macro
  declaration and calls.
- *
+
  macro_head Pointer to the  macros list .
  file_name Name of the source file to process.
  file_am file to write into.
@@ -152,7 +152,161 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_am);
 
 /* end of macro prossing functions defines and structs  */
 
+/* start of FIRST PASS and SECOND PASS functions defines and structs  */
+
+/* Types of instructions in FIRST PASS  */
+enum first_pass_line_types {
+ IS_ENTRY=100,
+ IS_EXTERN,
+ IS_STRING,
+ IS_DATA,
+ IS_COMMAND,
+ UNDEFINED_INSTRUCTION,
+ IS_ERROR
+};
+typedef enum Command_Codes{
+ MOV,
+ CMP,
+ ADD,
+ SUB,
+ LEA,
+ CLR,
+ NOT,
+ INC,
+ DEC,
+ JMP,
+ BNE,
+ RED,
+ PRN,
+ JSR,
+ RTS,
+ STOP
+
+}Command_Code;
+
+
+typedef struct MACHINE_CODE_INSTRUCTION{
+ int addr;/* Address of the instruction */
+ unsigned short  mila;/* Binary code (mila) */
+ struct MACHINE_CODE_INSTRUCTION *next;/* Pointer to the next instruction */
+}MACHINE_CODE_INSTRUCTION;
+
+typedef struct ADDRESS_Node{
+ int adr;/* Address */
+ struct ADDRESS_Node * next;/* Pointer to the next address */
+}ADDRESS_Node;
+
+typedef struct {
+ char label[MAXLABLE]; /* Label name */
+ ADDRESS_Node * addr_list; /* List of addresses for this entry  if LABEL_LIST only one node*/
+ struct ENTRY_LIST * next; /* Pointer to the next entry */
+} ENTRY_LIST,EXTERN_LIST,LABEL_LIST;
+
+typedef struct MACHINE_CODE_COMMAND{
+ int  addr; /* Address of the command */
+ unsigned short  binary_code;  /* Binary code for the command */
+ char label[MAXLABLE];  /* Label associated with the command */
+ int type;  /* Type of command */
+ struct MACHINE_CODE_COMMAND * next;  /* Pointer to the next command */
+}MACHINE_CODE_COMMAND;
+
+typedef struct ASSEMBLER_TABLE {
+ MACRO_LIST_NODE *  macro_head;  /* Head of macro list */
+ LABEL_LIST *  label_head; /* Head of label list */
+ ENTRY_LIST * entry_head; /* Head of entry list */
+ EXTERN_LIST * extern_head; /* Head of extern list */
+ MACHINE_CODE_COMMAND * command_head; /* Head of command list */
+ MACHINE_CODE_INSTRUCTION * instruction_head; /* Head of instruction list */
+} ASSEMBLER_TABLE;
+
+/*
+ This function adds a new instruction node, containing an address and a unsigned short value,
+ to the end of the linked list of machine code instructions. If the list is empty,
+ the new node becomes the head.
+
+ instruction_list Pointer to the head of the MACHINE_CODE_INSTRUCTION linked list.
+ address The address associated with the instruction.
+ mila unsigned short instruction representation to store in the node.
+ */
+void add_to_instruction_list(MACHINE_CODE_INSTRUCTION **instruction_list , int address , unsigned short mila);
+
+/*
+  This function allocates memory for a new LABEL_LIST node and appends it to the end
+  of the LABEL list. The label contains a name a address and a  linked list.
+
+ label_list Pointer to the head of the label list.
+ label Name of the label to be added.
+ address The address associated with the label.
+ */
+void insert_Label_List(LABEL_LIST **label_list, char *label, int address);
+
+/*
+  This function allocates memory for a new ENTRY_LIST node and appends it to the end
+  of the ENTRY_LIST. The label contains a name a address linked list and a  linked list.
+  the address linked list statrs as null
+
+ entry_list Pointer to the head of the label list.
+ label Name of the label to be added.
+ */
+void insert_Entry_List(ENTRY_LIST **entry_list, char *label);
+
+/*
+  This function allocates memory for a new EXTERN_LIST node and appends it to the end
+  of the EXTERN_LIST. The label contains a name a address linked list and a  linked list.
+  the address linked list statrs as null
+
+ EXTERN_LIST Pointer to the head of the label list.
+ label Name of the label to be added.
+ */
+void insert_Extern_List(EXTERN_LIST **entry_list, char *label);
+
+/*
+ This function categorizes the line into one of the following types:
+ IS_ENTRY,
+ IS_EXTERN,
+ IS_STRING,
+ IS_DATA,
+ IS_COMMAND,
+ UNDEFINED_INSTRUCTION,
+ IS_ERROR
+
+ word The first word in the line we are categorizing.
+ commands Pointer to the array that contains the command names .
+ return The type of the line as an integer value.
+ */
+int first_pass_line_type(char *word, char *commands[]);
+
+/*
+ * This function parses a string literal from the provided assembly line, converts each character
+ * into a instruction representation, and adds each character as an instruction to the
+ * `MACHINE_CODE_INSTRUCTION` list. If the string is correctly formatted (enclosed in quotes),
+ * it adds each character followed by a terminating zero (null character) to the list.
+ *
+ instruction_list Pointer to the head of the MACHINE_CODE_INSTRUCTION linked list.
+ word The word in the assembly code containing the string .
+ address Pointer to the current address, which is incremented as new instructions are added.
+ return Returns 1 if the string is correctly extracted, 0 if there is an error (i.e., no opening quote).
+ */
+int convert_string(MACHINE_CODE_INSTRUCTION **instruction_list, char *word, int *address);
+
+/*
+ This function checks if a given label is valid according to the following rules:
+ label cannot be empty. cannot start with a digit. can only contain alphanumeric characters (digits, uppercase, lowercase).
+ cannot be a reserved word (register name, command, or directive).
+
+ If any of these conditions are violated, an error is printed and the function returns 0.
+ Otherwise, it returns 1.
+
+ word The label to examine for validity.
+ line_count The current line number in the source file .
+ Returns 1 if the label is valid, or 0 if it is invalid.
+ */
+int examin_label(char *word,int line_count);
 
 
 
+int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler);
+
+
+/* end of FIRST PASS and SECOND PASS functions defines and structs  */
 #endif
