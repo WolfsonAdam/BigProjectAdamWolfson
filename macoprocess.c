@@ -263,10 +263,12 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
                 
                 /* Handle macro call by writing its content to the output file */
                 head_macro = find_macro(*macro_head , word);
+                
                 if(head_macro != NULL){
                     head_content =  head_macro->head_content;
                     while(head_content != NULL){
                         fprintf(fptr_am ,"%s" ,head_content->line );
+                        
                         head_content = head_content->next;
                     }
                 }
@@ -285,7 +287,7 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
         line_count++;
         memset(line , '\0',sizeof(line));
         memset(macro_name , '\0',sizeof(macro_name));
-
+        head_content = NULL;
         error_flag = 1;
     }
     
