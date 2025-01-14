@@ -150,18 +150,21 @@ int examin_label(char *word,int line_count) {
     short result = 1,endchecks=0;
     int i = 0,len;
     len = strlen(word);
-    if(word[0] == '\0') {
+    if(word[len-1] != ':') {
+        len=len-1;
+    }
+    if(word[0] == ':') {
         printf("missing label name error in line %d",line_count);
         result= 0;
         endchecks=1;
     }
-    /* Check if the macro name exceeds the maximum allowed length */
+    /* Check if the label name exceeds the maximum allowed length */
     if(!endchecks&&strlen(word) >= MAXLABLE){
         printf("label name exceeds the maximum label length error in line %d" , line_count);
         result= 0;
         endchecks=1;
     }
-    /* Check if the macro name starts with a digit */
+    /* Check if the label name starts with a digit */
     if(!endchecks&&isdigit(word[0])){
         printf("label name starts with a digit error in line %d" , line_count);
         result = 0;
@@ -231,3 +234,114 @@ int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler)
 
     return result;
 }
+
+int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]){
+    int i;
+    int result = LABEL;
+    int flag = 0;
+
+    /* Check if the first character is legal (must be a digit, letter, '&' for ADDRESS, or '#' for numbers) */
+    if( !isdigit(operand[0]) && !isupper(operand[0])  && !islower(operand[0]) && operand[0] != '&' && operand[0] != '#'){
+        return NO_OP;/* Return NO_OP for invalid operands */
+    }
+    /* Determine the operand type based on the first character */
+    switch (operand[0]){
+        /* Case for register operands  */
+        case 'r':
+            for(i = 0 ; i < TOTAL_REGISTERS ; i++){
+                if( ( strcmp(registers[i], operand) ) == 0 ){
+                    result = REGISTER; /* Register operand */
+                }
+            }
+
+        break;
+        /* Case for adress operands ( "&{lablenamehere}") */
+        case '&':
+            result = ADDRESS;
+        break;
+
+        /* Case for number operands ( "#5") */
+        case '#':
+            result = NUMBER; /* Number operand */
+        break;
+
+        /* Default case for label operands */
+        default:
+            result = LABEL;/* Label operand */
+    }
+    return result;/* Return the identified operand type */
+}
+
+
+
+int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers){
+
+    int type;
+    EXTERN_LIST * temp;
+    int result = 1;
+
+
+    /* Identify the type of the operand (it should be a label) */
+    type = operand_Type_Identifier(registers, word);
+    result = examin_label(word, line_counter);
+    /* Ensure the operand is a valid label */
+    if(type != LABEL || !result )
+    {
+        printf("operand is not a valid label error in line %d", line_counter);
+        result = 0;
+    }
+
+    temp  = assembler->extern_head;
+    if(result == 1)
+    {
+        while(temp!= NULL)
+        {
+            if( ( strcmp(word, temp->label) ) == 0)
+            {
+                /* Check if the label is already defined in the `.extern` list */
+                printf("ALREADY_DEFINED_AS_EXTERN error in line %d", line_counter);
+                result = 0;
+            }
+            temp = temp->next;
+        }
+    }
+
+    return result;
+}
+int Extern_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers){
+
+    int type;
+    EXTERN_LIST * temp;
+    int result = 1;
+
+
+    /* Identify the type of the operand (it should be a label) */
+    type = operand_Type_Identifier(registers, word);
+    result = examin_label(word, line_counter);
+    /* Ensure the operand is a valid label */
+    if(type != LABEL || !result )
+    {
+        printf("operand is not a valid label error in line %d", line_counter);
+        result = 0;
+    }
+
+    temp  = assembler->entry_head;
+    if(result == 1)
+    {
+        while(temp!= NULL)
+        {
+            if( ( strcmp(word, temp->label) ) == 0)
+            {
+                /* Check if the label is already defined in the `.extern` list */
+                printf("ALREADY_DEFINED_AS_EXTERN error in line %d", line_counter);
+                result = 0;
+            }
+            temp = temp->next;
+        }
+    }
+
+    return result;
+}
+
+
+

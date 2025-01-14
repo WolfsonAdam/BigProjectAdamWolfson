@@ -9,14 +9,14 @@ void * my_malloc(long size) {
     return ptr; /* Return void pointer to allocated memory */
 }
 
-void get_word(char * line,char * word) {
+int get_word(char * line,char * word) {
     int sentence_len,index_line,index_word;
     char c;
     const char divider=',';
     index_line=0;
     index_word = 0;
     sentence_len = strlen(line);
-    
+
     /* cycles threw white spaces untill not a white space or reached the end of the line*/
     c = line[index_line];
 
@@ -26,32 +26,34 @@ void get_word(char * line,char * word) {
         c = line[index_line];
     }
 
-   
+
     if(c==',') {
         word[index_word] = ',';
         sentence_len--;
         index_word++;
+        index_line++;
     }
     /* create the word */
-    
+
     while (!isspace(c) && c != divider && index_line< sentence_len) {
 
         word[index_word] = c;
-        
+
         index_word++;
         index_line++;
         c = line[index_line];
     }
-    
+
     /* end of string without \n*/
     word[index_word] = '\0';
-    
+
+    return  index_line;
 }
 
 short reservedWordCheck(char * word) {
     int i;
     short result;
-    
+
     /* List of reserved register names */
     const char *registers[TOTAL_REGISTERS] = {
         "r0",

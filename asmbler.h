@@ -10,6 +10,7 @@
 #define MAXLABLE 31 /*maximun size on a lable */
 #define TOTAL_COMMANDS 16 /* number of commands*/
 #define TOTAL_REGISTERS 8 /* number of registers*/
+#define MAX_ASCII_VALUE 127
 /*
 
   This function allocates memory of the specified size and checks if the allocation
@@ -26,9 +27,10 @@ void * my_malloc(long size);
 
  line is the line of text to search in.
  word is the value that's going to get returned.
-
+ changed at 14/1/2025 while writing first pass added return. needed it for
+ return returns the length we traveled on the line
 */
-void get_word(char * line,char * word);
+int get_word(char * line,char * word);
 /*
 
  This function checks whether a given label is a reserved word in the assembler.
@@ -184,6 +186,14 @@ typedef enum Command_Codes{
 
 }Command_Code;
 
+enum operand_type {
+ REGISTER=1000,
+ NUMBER,
+ LABEL,
+ ADDRESS,
+ NO_OP
+
+};
 
 typedef struct MACHINE_CODE_INSTRUCTION{
  int addr;/* Address of the instruction */
@@ -218,6 +228,7 @@ typedef struct ASSEMBLER_TABLE {
  MACHINE_CODE_COMMAND * command_head; /* Head of command list */
  MACHINE_CODE_INSTRUCTION * instruction_head; /* Head of instruction list */
 } ASSEMBLER_TABLE;
+
 
 /*
  This function adds a new instruction node, containing an address and a unsigned short value,
@@ -308,5 +319,10 @@ int examin_label(char *word,int line_count);
 int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler);
 
 
+int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]);
+
+int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers);
+
+int Extern_Examine(char * line , int line_counter , ASSEMBLER_TABLE *assembler ,const char **resgisters);
 /* end of FIRST PASS and SECOND PASS functions defines and structs  */
 #endif
