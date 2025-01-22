@@ -11,6 +11,20 @@
 #define TOTAL_COMMANDS 16 /* number of commands*/
 #define TOTAL_REGISTERS 8 /* number of registers*/
 #define MAX_ASCII_VALUE 127
+#define MIN_NUMBER_24BIT -8388608
+#define MAX_NUMBER_24BIT  8388607
+#define ON_24_BIT 0xffffff
+#define ON_8_BIT 0xff
+#define A 4
+#define R 2
+#define E 1
+#define FUNCT 2
+#define OPCODE 17
+#define MIONSRC 15
+#define MIONDST 10
+#define RGSRC 12
+#define RGDST 7
+#define SECONDPASS -1
 /*
 
   This function allocates memory of the specified size and checks if the allocation
@@ -43,7 +57,7 @@ short reservedWordCheck(char * word);
 /* end of general utill for the whole project */
 
 
-
+int getIndex(char * words[],char * word );
 
 
 
@@ -167,37 +181,42 @@ enum first_pass_line_types {
  IS_ERROR
 };
 typedef enum Command_Codes{
- MOV,
+ MOV=0,
  CMP,
  ADD,
  SUB,
  LEA,
+
  CLR,
  NOT,
  INC,
  DEC,
  JMP,
  BNE,
+ JSR,
  RED,
  PRN,
- JSR,
+
  RTS,
  STOP
 
 }Command_Code;
 
 enum operand_type {
- REGISTER=1000,
  NUMBER,
  LABEL,
  ADDRESS,
+ REGISTER,
  NO_OP
 
 };
-
+/* represents 24 bits  */
+typedef struct mila {
+ unsigned int binary;
+}mila;
 typedef struct MACHINE_CODE_INSTRUCTION{
  int addr;/* Address of the instruction */
- unsigned short  mila;/* Binary code (mila) */
+ mila  mila;/* Binary code (mila) */
  struct MACHINE_CODE_INSTRUCTION *next;/* Pointer to the next instruction */
 }MACHINE_CODE_INSTRUCTION;
 
@@ -212,9 +231,11 @@ typedef struct {
  struct ENTRY_LIST * next; /* Pointer to the next entry */
 } ENTRY_LIST,EXTERN_LIST,LABEL_LIST;
 
+
+
 typedef struct MACHINE_CODE_COMMAND{
  int  addr; /* Address of the command */
- unsigned short  binary_code;  /* Binary code for the command */
+ mila  binary_code;  /* Binary code for the command */
  char label[MAXLABLE];  /* Label associated with the command */
  int type;  /* Type of command */
  struct MACHINE_CODE_COMMAND * next;  /* Pointer to the next command */
@@ -229,7 +250,13 @@ typedef struct ASSEMBLER_TABLE {
  MACHINE_CODE_INSTRUCTION * instruction_head; /* Head of instruction list */
 } ASSEMBLER_TABLE;
 
+/* this functions convarts a 32 bit int to a mila struct of 24 bits
+ without returning any errors
+ *
+ number the 32 int to be convarted
 
+ */
+void int_to_mila(int number ,mila * mila);
 /*
  This function adds a new instruction node, containing an address and a unsigned short value,
  to the end of the linked list of machine code instructions. If the list is empty,
@@ -239,7 +266,7 @@ typedef struct ASSEMBLER_TABLE {
  address The address associated with the instruction.
  mila unsigned short instruction representation to store in the node.
  */
-void add_to_instruction_list(MACHINE_CODE_INSTRUCTION **instruction_list , int address , unsigned short mila);
+void add_to_instruction_list(MACHINE_CODE_INSTRUCTION **instruction_list , int address , mila mila);
 
 /*
   This function allocates memory for a new LABEL_LIST node and appends it to the end
@@ -285,7 +312,7 @@ void insert_Extern_List(EXTERN_LIST **entry_list, char *label);
  commands Pointer to the array that contains the command names .
  return The type of the line as an integer value.
  */
-int first_pass_line_type(char *word, char *commands[]);
+int first_pass_line_type(char *word, char *commands[],int *command);
 
 /*
  * This function parses a string literal from the provided assembly line, converts each character
@@ -324,5 +351,23 @@ int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]);
 int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers);
 
 int Extern_Examine(char * line , int line_counter , ASSEMBLER_TABLE *assembler ,const char **resgisters);
+
+int number_Examine(char * word,int line_counter);
+
+int extract_Data(MACHINE_CODE_INSTRUCTION **instruction_list, char *line, int *address, int line_counter) ;
+
+void insert_Command_List(MACHINE_CODE_COMMAND **command_list , int addr, char label[MAXLABLE] , mila binary_code , int type);
+
+void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, int type_src, char *dest_op, int type_dest,int funct, int *IC);
+
+int examine_oprand(char * oprand ,int oprand_type,int line_counter);
+
+int command_check(int command_code ,char * line,int line_counter,const char **registers);
+
+int commandCodeToOpCode(int command_code,int *opCode,int *functCode);
+
+int convert_Command(MACHINE_CODE_COMMAND **command_list, const char **registers, char *line, int command_code, int *IC , int line_counter);
+
+int firstpass(ASSEMBLER_TABLE **assembler, char *file_name );
 /* end of FIRST PASS and SECOND PASS functions defines and structs  */
 #endif
