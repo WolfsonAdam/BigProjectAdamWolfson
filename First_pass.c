@@ -948,3 +948,66 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
 
        return error_flag;
     }
+void free_ADDRESS_Node(ADDRESS_Node **head) {
+    ADDRESS_Node *temp;
+    /* Loop through the address list and free each node */
+    while (*head != NULL) {
+        temp = *head;
+        *head = (*head)->next;
+        free(temp);
+        temp = NULL;
+    }
+}
+
+void free_LABEL_LIST(LABEL_LIST **head){
+    LABEL_LIST *temp;
+    /* Loop through the label list and free each node */
+    while (*head != NULL) {
+        temp = *head;
+        *head = (*head)->next;
+        free_ADDRESS_Node(&temp->addr_list);
+        free(temp);
+        temp = NULL;
+    }
+
+}
+void free_ENTRY_LIST(ENTRY_LIST **head) {
+    free_LABEL_LIST(head);
+}
+
+void free_EXTERN_LIST(EXTERN_LIST **head) {
+    free_LABEL_LIST(head);
+}
+
+
+void free_MACHINE_CODE_COMMAND(MACHINE_CODE_COMMAND **head){
+    MACHINE_CODE_COMMAND *temp;
+    /* Loop through the command list and free each node */
+    while (*head != NULL) {
+        temp = *head;
+        *head = (*head)->next;
+        free(temp);
+        temp = NULL;
+    }
+
+}
+void free_MACHINE_CODE_INSTRUCTION(MACHINE_CODE_INSTRUCTION **head){
+    MACHINE_CODE_INSTRUCTION *temp;
+    /* Loop through the instruction list and free each node */
+    while (*head != NULL) {
+        temp = *head;
+        *head = (*head)->next;
+        free(temp);
+        temp = NULL;
+    }
+
+}
+
+void free_assembler_table(ASSEMBLER_TABLE **table) {
+    free_LABEL_LIST(&(*table)->label_head);
+    free_ENTRY_LIST(&(*table)->entry_head);
+    free_EXTERN_LIST(&(*table)->extern_head);
+    free_MACHINE_CODE_COMMAND(&(*table)->command_head);
+    free_MACHINE_CODE_INSTRUCTION(&(*table)->instruction_head);
+    free_macro_list(&(*table)->macro_head);
+}

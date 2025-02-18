@@ -64,25 +64,25 @@ MACRO_LIST_NODE * find_macro(MACRO_LIST_NODE * head , char * name_to_find){
 }
 
 int line_type(char * word , MACRO_LIST_NODE *head ) {
-    
+
     /* Check if the line is a macro declaration */
     if(strcmp(word , "mcro" ) == 0){
-        
+
         return DECLARATION;
     }
     /* Check if the line marks the end of a macro */
     if(strcmp(word , "mcroend" ) == 0){
-        
+
         return DECLARATION_END;
     }
     /* Check for empty line */
     if(word[0] == '\0' || word [0]== '\n'){
-        
+
         return EMPTY_LINE;
     }
     /* Check if the line calls an existing macro */
     if(find_macro(head , word) != NULL){
-        
+
         return MACRO_CALL;
     }
     /* Default case if no conditions are met (ordinary line)*/
@@ -144,7 +144,7 @@ short Macro_Name_Check(char * word ,MACRO_LIST_NODE * head , int line_count) {
     while(i < len){
         if( isupper(word[i]) == 0 && islower(word[i]) == 0 && isdigit(word[i]) == 0 && word[i] != '_'){
             printf("invalid character in macro name error in line %d " , line_count);
- 
+
             result = 0;
             endchecks=1;
         }
@@ -169,7 +169,7 @@ short Macro_Name_Check(char * word ,MACRO_LIST_NODE * head , int line_count) {
     return  result;
 }
 
-int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) {
+int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,char ** file_amPtr) {
     char * file_am ,* file_as;
     char line[MAXLINE] , word[MAXLINE] , macro_name[MAXLINE];
     FILE * fptr_am , * fptr_as;
@@ -189,7 +189,7 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
     file_am = strcpy(file_am , file_name);
     file_am = strcat(file_am , ".am");
 
-    
+
     /* Open the source file for reading */
     fptr_as  = fopen(file_as , "r");
 
@@ -199,26 +199,26 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
     }
     /* Open the output file for writing */
     fptr_am = fopen(file_am , "w");
-    *file_amPtr=fptr_am;
+    *file_amPtr=file_am;
     if(fptr_am == NULL){
         printf("File opening error couldnt open am file");
         exit(1);
     }
-    
+
     /* Main loop to scan the source file line by line */
     while(fgets(line , sizeof(line) , fptr_as) != NULL){
-        
+
         get_word(line , word);
         /* Determine the type of the line */
-        
+
         type = line_type(word , (*macro_head) );
-        
+
         switch(type){
             case DECLARATION:
                 /* Check macro name validity and handle error flags */
-                
+
                 get_word(line+strlen(word) , macro_name);
-                
+
                 error_flag = Macro_Name_Check(macro_name,  *macro_head, line_count);
                 if(!error_flag ){
                     final_result = 0;
@@ -230,13 +230,13 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
                     line_count++;
                     get_word(line , word);
                     type = line_type(word , *macro_head);
-                     
+
                     if(type == DECLARATION_END){
                          /* Check for the validity of the macro end line */
                         get_word(line+strlen(word) , word);
-                        
+
                         error_flag = (word[0] == '\0');
-                        
+
                         if(!error_flag ){
                             final_result = 0;
                             printf("extra characters after macro end error in line %d\n" , line_count);
@@ -260,15 +260,13 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
                 break;
 
             case MACRO_CALL:
-                
+
                 /* Handle macro call by writing its content to the output file */
                 head_macro = find_macro(*macro_head , word);
-                
                 if(head_macro != NULL){
                     head_content =  head_macro->head_content;
                     while(head_content != NULL){
                         fprintf(fptr_am ,"%s" ,head_content->line );
-                        
                         head_content = head_content->next;
                     }
                 }
@@ -290,11 +288,11 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
         head_content = NULL;
         error_flag = 1;
     }
-    
+
     line_count = 0;
 
 
-    
+
     file_as = NULL;
     fprintf(fptr_am ,"%s" ,"\n");
 
@@ -308,7 +306,7 @@ int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_amPtr) 
             exit(1);
         }
     }
-    free(file_am);
     
+
     return final_result;
 }

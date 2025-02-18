@@ -225,7 +225,7 @@ typedef struct ADDRESS_Node{
  struct ADDRESS_Node * next;/* Pointer to the next address */
 }ADDRESS_Node;
 
-typedef struct {
+typedef struct ENTRY_LIST {
  char label[MAXLABLE]; /* Label name */
  ADDRESS_Node * addr_list; /* List of addresses for this entry  if LABEL_LIST only one node*/
  struct ENTRY_LIST * next; /* Pointer to the next entry */
@@ -250,6 +250,13 @@ typedef struct ASSEMBLER_TABLE {
  MACHINE_CODE_INSTRUCTION * instruction_head; /* Head of instruction list */
 } ASSEMBLER_TABLE;
 
+void free_ADDRESS_Node(ADDRESS_Node **head);
+void free_LABEL_LIST(LABEL_LIST **head);
+void free_ENTRY_LIST(ENTRY_LIST **head);
+void free_EXTERN_LIST(EXTERN_LIST **head);
+void free_MACHINE_CODE_COMMAND(MACHINE_CODE_COMMAND **head);
+void free_MACHINE_CODE_INSTRUCTION(MACHINE_CODE_INSTRUCTION **head);
+void free_assembler_table(ASSEMBLER_TABLE **table);
 /* this functions convarts a 32 bit int to a mila struct of 24 bits
  without returning any errors
  *
