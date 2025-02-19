@@ -114,13 +114,3 @@ short reservedWordCheck(char * word) {
     return result;
 }
 
-int getIndex(char * words[],char * word ) {
-    int len ,i =0 , result =-1;
-    len =sizeof(words)/sizeof(words[0]);
-    for(; i < len ; i++) {
-        if(strcmp(words[i] , word) == 0) {
-            result=i;
-        }
-    }
-    return result;
-}

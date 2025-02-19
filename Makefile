@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -ansi -Wall -pedantic
+CFLAGS = -ansi -Wall -pedantic -g
 LDFLAGS = -lm  # Add this line to link the math library
 First_pass = first_pass.o
 

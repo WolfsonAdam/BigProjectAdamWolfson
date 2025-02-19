@@ -18,12 +18,12 @@
 #define A 4
 #define R 2
 #define E 1
-#define FUNCT 2
-#define OPCODE 17
-#define MIONSRC 15
-#define MIONDST 10
-#define RGSRC 12
-#define RGDST 7
+#define FUNCT 3
+#define OPCODE 18
+#define MIONSRC 16
+#define MIONDST 11
+#define RGSRC 13
+#define RGDST 8
 #define SECONDPASS -1
 /*
 
@@ -57,7 +57,7 @@ short reservedWordCheck(char * word);
 /* end of general utill for the whole project */
 
 
-int getIndex(char * words[],char * word );
+
 
 
 
@@ -163,7 +163,7 @@ short Macro_Name_Check(char * word ,MACRO_LIST_NODE * head , int line_count);
  file_name Name of the source file to process.
  file_am file to write into.
  */
-int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,FILE** file_am);
+int preProcess(MACRO_LIST_NODE ** macro_head,char *file_name,char** file_am);
 
 
 /* end of macro prossing functions defines and structs  */
@@ -353,11 +353,11 @@ int examin_label(char *word,int line_count);
 int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler);
 
 
-int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]);
+int operand_Type_Identifier( char **registers, char operand[MAXLABLE]);
 
-int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers);
+int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler , char **registers);
 
-int Extern_Examine(char * line , int line_counter , ASSEMBLER_TABLE *assembler ,const char **resgisters);
+int Extern_Examine(char * line , int line_counter , ASSEMBLER_TABLE *assembler , char **resgisters);
 
 int number_Examine(char * word,int line_counter);
 
@@ -369,11 +369,11 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
 
 int examine_oprand(char * oprand ,int oprand_type,int line_counter);
 
-int command_check(int command_code ,char * line,int line_counter,const char **registers);
+int command_check(int command_code ,char * line,int line_counter, char **registers);
 
 int commandCodeToOpCode(int command_code,int *opCode,int *functCode);
 
-int convert_Command(MACHINE_CODE_COMMAND **command_list, const char **registers, char *line, int command_code, int *IC , int line_counter);
+int convert_Command(MACHINE_CODE_COMMAND **command_list,  char **registers, char *line, int command_code, int *IC , int line_counter);
 
 int firstpass(ASSEMBLER_TABLE **assembler, char *file_name );
 /* end of FIRST PASS and SECOND PASS functions defines and structs  */

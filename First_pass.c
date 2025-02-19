@@ -12,6 +12,7 @@ void insert_Label_List(LABEL_LIST **label_list, char *label, int address){
 
     ptr = NULL;
     new_node = my_malloc(sizeof(LABEL_LIST));
+    new_node->addr_list=my_malloc(sizeof(ADDRESS_Node));
     /* Initialize the new label node */
     memset(new_node->label, '\0', sizeof(new_node->label));
     strcpy(new_node->label, label);
@@ -76,7 +77,11 @@ void insert_Extern_List(EXTERN_LIST **entry_list, char *label) {
 }
 
 int first_pass_line_type(char *word, char *commands[],int* command) {
+    
     int i;
+    if(word[0]=='\0'){
+        return EMPTY_LINE;
+    }
     if(strcmp(word, ".entry") == 0) {
         return IS_ENTRY;
     }
@@ -155,33 +160,35 @@ int convert_string(MACHINE_CODE_INSTRUCTION **instruction_list, char *word, int 
     return 1;
 }
 int examin_label(char *word,int line_count) {
+    
     short result = 1,endchecks=0;
     int i = 0,len;
     len = strlen(word);
-    if(word[len-1] != ':') {
+    
+    if(word[len-1] == ':') {
         len=len-1;
     }
     if(word[0] == ':') {
-        printf("missing label name error in line %d",line_count);
+        printf("missing label name error in line %d\n",line_count);
         result= 0;
         endchecks=1;
     }
     /* Check if the label name exceeds the maximum allowed length */
     if(!endchecks&&strlen(word) >= MAXLABLE){
-        printf("label name exceeds the maximum label length error in line %d" , line_count);
+        printf("label name exceeds the maximum label length error in line %d\n" , line_count);
         result= 0;
         endchecks=1;
     }
     /* Check if the label name starts with a digit */
     if(!endchecks&&isdigit(word[0])){
-        printf("label name starts with a digit error in line %d" , line_count);
+        printf("label name starts with a digit error in line %d\n" , line_count);
         result = 0;
         endchecks=1;
     }
     /* Loop through the characters of the macro name to validate them */
     while(i < len){
         if( isupper(word[i]) == 0 && islower(word[i]) == 0 && isdigit(word[i]) == 0 ){
-            printf("invalid character in label name error in line %d " , line_count);
+            printf("invalid character in label name error in line %d\n" , line_count);
 
             result = 0;
             endchecks=1;
@@ -243,10 +250,10 @@ int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler)
     return result;
 }
 
-int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]){
+int operand_Type_Identifier( char **registers, char operand[MAXLABLE]){
     int i;
     int result = LABEL;
-    int flag = 0;
+    
 
     /* Check if the first character is legal (must be a digit, letter, '&' for ADDRESS, or '#' for numbers) */
     if( !isdigit(operand[0]) && !isupper(operand[0])  && !islower(operand[0]) && operand[0] != '&' && operand[0] != '#'){
@@ -282,7 +289,7 @@ int operand_Type_Identifier(const char **registers, char operand[MAXLABLE]){
 
 
 
-int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers){
+int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler , char **registers){
 
     int type;
     EXTERN_LIST * temp;
@@ -317,7 +324,7 @@ int Entry_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,c
     return result;
 }
 
-int Extern_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,const char **registers){
+int Extern_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler , char **registers){
 
     int type;
     EXTERN_LIST * temp;
@@ -355,20 +362,23 @@ int Extern_Examine(char * word , int line_counter , ASSEMBLER_TABLE *assembler ,
 int number_Examine(char * word,int line_counter) {
     long number;
     int i=0,result = 1;
-    if(isdigit(word[0])== '+' || isdigit(word[0]) == '-') {
-        i++;
+    
+    if(word[0]== '+' || word[0] == '-') {
+        
+        i=1;
     }
     for(; i <strlen(word); i++) {
         if(!isdigit(word[i])) {
+            printf("current char %c\n",word[i]);
             result=0;
-            printf("%s is not a valid number error in line %d", word, line_counter);
+            printf("%s is not a valid number error in line %d\n", word, line_counter);
             return result;
         }
 
     }
     number = atol(word);
     if(number > MAX_NUMBER_24BIT || number < MIN_NUMBER_24BIT) {
-        printf("out of bounds error in line %d", line_counter);
+        printf("out of bounds error in line %d\n", line_counter);
         result=0;
     }
     return result;
@@ -391,9 +401,9 @@ int extract_Data(MACHINE_CODE_INSTRUCTION **instruction_list, char *line, int *a
         add_to_instruction_list(instruction_list , *address , mila);
         skip+=get_word(line+skip,comma);
         (*address)++;
-        if(comma[0] != ',') {
+        if(comma[0] != ',' && comma[0]!='\0') {
             result=0;
-            printf(" missing comma error error in line %d", line_counter);
+            printf(" missing comma error error in line %d\n", line_counter);
             break;
         }
         skip+=get_word(line+skip,number);
@@ -436,10 +446,10 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
     oprand_value=0;
     lable[0]='\0';
     new_mila.binary=0;
-    new_mila.binary|=A; //all commands have A bit as 1 and R and E bits as 0 according to instructions
+    new_mila.binary|=A; /*all commands have A bit as 1 and R and E bits as 0 according to instructions*/
     new_mila.binary|=(command_code<<OPCODE); /* fills the op code field in the biary code  */
     new_mila.binary|=(funct<<FUNCT);/* fills the funct code field in the biary code  */
-
+    printf("mil after A opcode and funct %x\n", new_mila.binary);
     /* ZERO OPRAND COMMANDS */
     if(command_code==RTS||command_code==STOP) {
 
@@ -483,6 +493,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
     if(command_code==MOV||command_code==CMP||command_code==ADD||command_code==SUB||command_code==LEA) {
         new_mila.binary|=(type_dest<<MIONDST);
         new_mila.binary|=(type_src<<MIONSRC);
+        printf("mil after types %x\n", new_mila.binary);
         /* if oprand is register */
         if(type_src == REGISTER) {
             /* skips the r and gets the registers number */
@@ -499,7 +510,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         }
         insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
         (*IC)++;
-
+        printf("mila is %x\n", new_mila.binary);
         if(type_dest == NUMBER) {
 
             new_mila.binary=A;
@@ -533,6 +544,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         }
 
     }
+    
 
 }
 
@@ -557,9 +569,10 @@ int examine_oprand(char * oprand ,int oprand_type,int line_counter) {
     return result;
 }
 
-int command_check(int command_code ,char * line,int line_counter,const char **registers) {
-    char word[MAXLABLE], comma[MAXLABLE], dest[MAXLABLE], src[MAXLABLE];
+int command_check(int command_code ,char * line,int line_counter, char **registers) {
+    char word[MAXLABLE], dest[MAXLABLE], src[MAXLABLE];
     int dest_type,src_type,result=1,skip=0,noExtraTXT;
+    
     if(command_code==RTS||command_code==STOP) {
 
         /* check for empty line in the end */
@@ -603,7 +616,7 @@ int command_check(int command_code ,char * line,int line_counter,const char **re
     if(command_code==MOV||command_code==CMP||command_code==ADD||command_code==SUB||command_code==LEA) {
         skip+=get_word(line,src);
         src_type=operand_Type_Identifier(registers,src);
-
+        
         /* checks the validity of the src oprand */
         if(src_type==ADDRESS) {
             result=0;
@@ -614,13 +627,14 @@ int command_check(int command_code ,char * line,int line_counter,const char **re
                 printf("invalid oprand  error in line  %d\n",line_counter);
             }
         }
-        skip+=get_word(line,word);
+        skip+=get_word(line+skip,word);
+        
         if(word[0]!=','&&strlen(word)!=1) {
             result=0;
             printf("missing comma  error in line  %d\n",line_counter);
             return result;
         }
-        skip+=get_word(line,dest);
+        skip+=get_word(line+skip,dest);
         dest_type=operand_Type_Identifier(registers,dest);
         result=examine_oprand(dest,dest_type,line_counter)&examine_oprand(src,src_type,line_counter);
         /* checks the validity of the dst oprand */
@@ -634,8 +648,8 @@ int command_check(int command_code ,char * line,int line_counter,const char **re
 
     }
     get_word(line+skip,word);
-    // true if line is empty after the oprands as it should false if line isnt empty + prints error msg
-    noExtraTXT=word[0]=='\0';
+    /* true if line is empty after the oprands as it should false if line isnt empty + prints error msg*/
+    noExtraTXT = word[0]=='\0';
     if(!noExtraTXT) {
         printf("extra text error in line   %d\n",line_counter);
     }
@@ -701,10 +715,10 @@ int commandCodeToOpCode(int command_code,int *opCode,int *functCode) {
     return result;
 }
 
-int convert_Command(MACHINE_CODE_COMMAND **command_list, const char **registers, char *line, int command_code, int *IC , int line_counter)
+int convert_Command(MACHINE_CODE_COMMAND **command_list,  char **registers, char *line, int command_code, int *IC , int line_counter)
 {
     int result=1,skip=0,opCode,functCode;
-    char src_op[MAXLABLE], dest_op[MAXLABLE];
+    char src_op[MAXLABLE], dest_op[MAXLABLE],comma[MAXLABLE];
     int type_src = NO_OP , type_dest = NO_OP;
 
     memset(src_op , '\0' , MAXLABLE);
@@ -727,7 +741,7 @@ int convert_Command(MACHINE_CODE_COMMAND **command_list, const char **registers,
             /* Extract the source operand (before the comma) */
             skip+=get_word(line, src_op);
             /* Extract the destination operand (after the comma) */
-            skip+=1;
+            skip+=get_word(line + skip, comma);
             skip+=get_word (line + skip , dest_op);
             /* Identify the types of the source and destination operands */
             type_src =  operand_Type_Identifier(registers, src_op);
@@ -775,7 +789,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
     int error_flag = 0 , error = 0 ;/* Flags to track errors during the first pass */
 
     /* Register names for operand identification */
-    const char *registers[] =
+     char *registers[] =
     {
         "r0",
         "r1",
@@ -786,7 +800,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
         "r6",
         "r7"
     };
-    const char *commands[TOTAL_COMMANDS]={
+     char *commands[TOTAL_COMMANDS]={
         "mov",
         "cmp",
         "add",
@@ -820,22 +834,25 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
     {
         /* Extract the label (if any) from the line */
 
-        skip=get_word(line, label);
-        if(label[skip-1] == ':')
+        skip=get_word(line, word);
+        if(word[skip-1] == ':')
         {
             error = !examin_label(label, line_counter);/* Check the validity of the label */
             error +=!compare_label_with_other_lists(label,*assembler) ;
             if(error ){
                 type = IS_ERROR;
             }
+            strcpy(label,word);
+            label_skip = skip;
+            skip+=get_word(line + label_skip,word); /* len of the lable + the reserved word including all the write spaces*/
 
         }
 
         /* If no label error, determine the line type (directive or command) */
         if (!error  )
-        {
-            label_skip = skip;
-            skip+=get_word(line + label_skip,word); /* len of the lable + the reserved word including all the write spaces*/
+        {   
+            printf("line : %d\n------------------------\n",line_counter);
+            
             type = first_pass_line_type(word, commands,&command);
         }
 
@@ -908,18 +925,21 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
                     /* Handle assembly commands */
                         if (label_skip )
                         {
+                            
                             /* Add the label to the label list with IC */
                             insert_Label_List(&((*assembler)->label_head), label, IC );
                         }
                 /* Examine the command for errors and add to command list */
-
+                        
                    error = !convert_Command(&((*assembler)->command_head), registers, line + skip, command, &IC , line_counter);
 
                 break;
 
-                case IS_ERROR:
-                    /* Error case: Skip further processing if the line has been marked as an error */
-                        break;
+                
+                
+                case EMPTY_LINE:
+                break;
+                        
 
                 default:
                     /* Handle undefined instructions (lines that don't match any valid directive or command) */
@@ -941,6 +961,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
             memset(line, '\0', sizeof(line));
             memset(word, '\0', sizeof(word));
             memset(oprand, '\0', sizeof(oprand));
+            printf("----------------\n");
         }
         /* Close the file after processing */
         fclose(fptr);
