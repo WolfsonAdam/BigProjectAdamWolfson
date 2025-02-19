@@ -138,12 +138,15 @@ int convert_string(MACHINE_CODE_INSTRUCTION **instruction_list, char *word, int 
 
     int i;
     mila current;
-
+    
     /* Check if the string starts and ends with " */
+    
     if (word[0] != '"') {
+        
         return 0;
     }
     if (word[strlen(word)-1] != '"') {
+        
         return 0;
     }
 
@@ -152,10 +155,12 @@ int convert_string(MACHINE_CODE_INSTRUCTION **instruction_list, char *word, int 
         int_to_mila(word[i], &current);
         add_to_instruction_list(instruction_list , *address , current);/* Add character as instruction */
         (*address)++;
+        printf("mila is %x\n",current.binary);
     }
     /* Add a terminating null character (MILA = 0) at the end of the string */
     int_to_mila(0, &current);
     add_to_instruction_list(instruction_list , *address , current);
+    printf("mila is %x\n",current.binary);
     (*address)++;
     return 1;
 }
@@ -399,6 +404,7 @@ int extract_Data(MACHINE_CODE_INSTRUCTION **instruction_list, char *line, int *a
 
         int_to_mila(atoi(number),&mila);
         add_to_instruction_list(instruction_list , *address , mila);
+        printf("mila is %x\n",mila.binary);
         skip+=get_word(line+skip,comma);
         (*address)++;
         if(comma[0] != ',' && comma[0]!='\0') {
@@ -449,12 +455,13 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
     new_mila.binary|=A; /*all commands have A bit as 1 and R and E bits as 0 according to instructions*/
     new_mila.binary|=(command_code<<OPCODE); /* fills the op code field in the biary code  */
     new_mila.binary|=(funct<<FUNCT);/* fills the funct code field in the biary code  */
-    printf("mil after A opcode and funct %x\n", new_mila.binary);
+    
     /* ZERO OPRAND COMMANDS */
     if(command_code==RTS||command_code==STOP) {
 
         insert_Command_List(command_list, *IC, lable, new_mila, type_src);
         (*IC)++;
+        printf("mila is %x\n", new_mila.binary);
 
     }
     /* ONE OPRAND COMMANDS */
@@ -471,7 +478,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         /* adds the command binarry code to the list */
         insert_Command_List(command_list, *IC, lable, new_mila, type_src);
         (*IC)++;
-
+        printf("mila is %x\n", new_mila.binary);
         /* if number add the number in the next binary code  if lable or addres add them in second pass cause might not be defined yet */
        if(type_dest == NUMBER) {
 
@@ -493,7 +500,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
     if(command_code==MOV||command_code==CMP||command_code==ADD||command_code==SUB||command_code==LEA) {
         new_mila.binary|=(type_dest<<MIONDST);
         new_mila.binary|=(type_src<<MIONSRC);
-        printf("mil after types %x\n", new_mila.binary);
+        
         /* if oprand is register */
         if(type_src == REGISTER) {
             /* skips the r and gets the registers number */
@@ -511,21 +518,6 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
         (*IC)++;
         printf("mila is %x\n", new_mila.binary);
-        if(type_dest == NUMBER) {
-
-            new_mila.binary=A;
-            oprand_value=atoi(dest_op+1);
-            new_mila.binary|=(oprand_value<<FUNCT); /* diract number starts right after ARE in the mila */
-        }else {
-            /* handles  label */
-            strcpy(lable,dest_op);
-            new_mila.binary=SECONDPASS;
-        }
-        /* if register the command is already complete */
-        if(type_dest != REGISTER) {
-            insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
-            (*IC)++;
-        }
 
         if(type_src == NUMBER) {
 
@@ -541,6 +533,25 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         if(type_src != REGISTER) {
             insert_Command_List(command_list, *IC, lable, new_mila, type_src);
             (*IC)++;
+            printf("mila is %x\n", new_mila.binary);
+        }
+
+    
+        if(type_dest == NUMBER) {
+
+            new_mila.binary=A;
+            oprand_value=atoi(dest_op+1);
+            new_mila.binary|=(oprand_value<<FUNCT); /* diract number starts right after ARE in the mila */
+        }else {
+            /* handles  label */
+            strcpy(lable,dest_op);
+            new_mila.binary=SECONDPASS;
+        }
+        /* if register the command is already complete */
+        if(type_dest != REGISTER) {
+            insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
+            (*IC)++;
+            printf("mila is %x\n", new_mila.binary);
         }
 
     }
@@ -905,6 +916,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
                     }
                 /* Examine the .string directive for errors */
                 get_word(line +skip,oprand);
+                
                 error = !convert_string(&(*assembler)->instruction_head,oprand ,&DC);
 
                 break;
