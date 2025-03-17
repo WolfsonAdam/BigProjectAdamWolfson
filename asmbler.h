@@ -264,6 +264,8 @@ void free_assembler_table(ASSEMBLER_TABLE **table);
 
  */
 void int_to_mila(int number ,mila * mila);
+
+void insert_address_list(ADDRESS_Node **address_list, char *label, int address);
 /*
  This function adds a new instruction node, containing an address and a unsigned short value,
  to the end of the linked list of machine code instructions. If the list is empty,

@@ -6,6 +6,35 @@ void int_to_mila(int number ,mila * mila) {
     number_24bit=number_24bit& ON_24_BIT;
     mila->binary=number_24bit;
 }
+void insert_address_list(ADDRESS_Node **address_list, int address){
+    ADDRESS_Node *ptr;
+    ADDRESS_Node *new_node ;
+
+    ptr = NULL;
+    new_node = my_malloc(sizeof(ADDRESS_Node));
+
+    new_node->adr = address;
+    new_node->next = NULL;
+
+
+    /* If the list is empty, set the new node as the head */
+    if (*address_list == NULL)
+    {
+        *address_list = new_node;
+
+    } else
+    {
+        /* Traverse the list to find the last node */
+        ptr = *address_list;
+        while (ptr->next != NULL)
+        {
+            ptr = ptr->next;
+        }
+        /* Append the new node to the end of the list */
+        ptr->next = new_node;
+    }
+
+}
 void insert_Label_List(LABEL_LIST **label_list, char *label, int address){
     LABEL_LIST *ptr;
     LABEL_LIST *new_node ;
