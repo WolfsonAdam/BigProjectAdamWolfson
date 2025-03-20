@@ -822,10 +822,10 @@ int convert_Command(MACHINE_CODE_COMMAND **command_list,  char **registers, char
 }
 
 
-int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
+int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
     FILE *fptr = NULL;
     char line[MAXLINE], label[MAXLABLE], word[MAXLABLE],oprand[MAXLABLE];
-    int IC = 100, DC = 1, skip = 0, line_counter = 1,label_skip = 0 , type = UNDEFINED_INSTRUCTION, command=0;
+    int  skip = 0, line_counter = 1,label_skip = 0 , type = UNDEFINED_INSTRUCTION, command=0;
     int error_flag = 0 , error = 0 ;/* Flags to track errors during the first pass */
 
     /* Register names for operand identification */
@@ -858,6 +858,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
         "rts",
         "stop"};
 
+    *IC = 100, *DC = 1;
     memset(label, '\0', sizeof(label));
     memset(line, '\0', sizeof(line));
 
@@ -941,12 +942,12 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
 
                     if (label_skip )
                     {
-                        insert_Label_List(&((*assembler)->label_head), label, IC + DC - 1);
+                        insert_Label_List(&((*assembler)->label_head), label, *IC + *DC - 1);
                     }
                 /* Examine the .string directive for errors */
                 get_word(line +skip,oprand);
                 
-                error = !convert_string(&(*assembler)->instruction_head,oprand ,&DC);
+                error = !convert_string(&(*assembler)->instruction_head,oprand ,DC);
 
                 break;
 
@@ -955,10 +956,10 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
                     if (label_skip )
                     {
                         /* Add the label to the label list */
-                        insert_Label_List(&((*assembler)->label_head), label,IC + DC - 1);
+                        insert_Label_List(&((*assembler)->label_head), label,*IC + *DC - 1);
                     }
                 /* Examine the .data directive for errors */
-                error = !extract_Data(&((*assembler)->instruction_head), line + skip, &DC,line_counter);
+                error = !extract_Data(&((*assembler)->instruction_head), line + skip, DC,line_counter);
 
                 break;
 
@@ -968,7 +969,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ) {
                         {
                             
                             /* Add the label to the label list with IC */
-                            insert_Label_List(&((*assembler)->label_head), label, IC );
+                            insert_Label_List(&((*assembler)->label_head), label, *IC );
                         }
                 /* Examine the command for errors and add to command list */
                         

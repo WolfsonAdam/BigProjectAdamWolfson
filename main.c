@@ -3,6 +3,7 @@
 int main(void) {
     char *file_am;
     char file_as[MAXLINE];
+    int IC ,DC;
     MACRO_LIST_NODE *  macro_head=NULL;  /* Head of macro list */
     LABEL_LIST *  label_head=NULL; /* Head of label list */
     ENTRY_LIST * entry_head=NULL; /* Head of entry list */
@@ -21,7 +22,7 @@ int main(void) {
     strcpy(file_as,"test");
     
     preProcess(&macro_head,file_as,&file_am);
-    firstpass(&assemblerPtr,file_am);
+    firstpass(&assemblerPtr,file_am,&IC,&DC);
     free_assembler_table(&assemblerPtr);
     return 0;
 }

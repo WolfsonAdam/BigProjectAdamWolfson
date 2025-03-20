@@ -1,10 +1,11 @@
+
+
+#ifndef ASMBLER_H
+#define ASMBLER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
-#ifndef ASMBLER_H
-#define ASMBLER_H
 /* start of general utill for the whole project */
 #define MAXLINE 81 /* maximun size on a line including the \n */
 #define MAXLABLE 31 /*maximun size on a lable */
@@ -264,8 +265,6 @@ void free_assembler_table(ASSEMBLER_TABLE **table);
 
  */
 void int_to_mila(int number ,mila * mila);
-
-void insert_address_list(ADDRESS_Node **address_list, char *label, int address);
 /*
  This function adds a new instruction node, containing an address and a unsigned short value,
  to the end of the linked list of machine code instructions. If the list is empty,
@@ -276,6 +275,8 @@ void insert_address_list(ADDRESS_Node **address_list, char *label, int address);
  mila unsigned short instruction representation to store in the node.
  */
 void add_to_instruction_list(MACHINE_CODE_INSTRUCTION **instruction_list , int address , mila mila);
+
+void insert_address_list(ADDRESS_Node **address_list, int address);
 
 /*
   This function allocates memory for a new LABEL_LIST node and appends it to the end
@@ -377,6 +378,14 @@ int commandCodeToOpCode(int command_code,int *opCode,int *functCode);
 
 int convert_Command(MACHINE_CODE_COMMAND **command_list,  char **registers, char *line, int command_code, int *IC , int line_counter);
 
-int firstpass(ASSEMBLER_TABLE **assembler, char *file_name );
+int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) ;
+
+int label_exist(char *label, ASSEMBLER_TABLE *assembler);
+
+int Second_Pass(ASSEMBLER_TABLE ** assembler_table , char * file_name , int IC , int DC);
 /* end of FIRST PASS and SECOND PASS functions defines and structs  */
+
+
+
 #endif
+
