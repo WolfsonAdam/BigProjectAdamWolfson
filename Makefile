@@ -19,6 +19,9 @@ macoprocess.o: macoprocess.c asmbler.h
 
 first_pass.o: first_pass.c asmbler.h
 	$(CC) $(CFLAGS) -c first_pass.c -o first_pass.o
+	
+first_pass.o: second_pass.c asmbler.h
+	$(CC) $(CFLAGS) -c first_pass.c -o first_pass.o
 
 clean:
 	rm -f main.o utill.o macoprocess.o first_pass.o program
