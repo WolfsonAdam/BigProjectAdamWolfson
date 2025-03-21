@@ -382,7 +382,21 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) ;
 
 int label_exist(char *label, ASSEMBLER_TABLE *assembler);
 
+void printFormatedLine(FILE * filePtr,unsigned int info , int adr);
+
+void makeObjectFile(ASSEMBLER_TABLE ** assembler_table , char *file_name , int IC , int DC) ;
+
+void makeEntryFile(ASSEMBLER_TABLE ** assembler_table , char *file_name);
+
+void makeExternFile(ASSEMBLER_TABLE ** assembler_table , char *file_name);
+
+void makeFiles(ASSEMBLER_TABLE ** assembler , char *file_name , int IC , int DC);
+
+
+
 int Second_Pass(ASSEMBLER_TABLE ** assembler_table , char * file_name , int IC , int DC);
+
+
 /* end of FIRST PASS and SECOND PASS functions defines and structs  */
 
 
