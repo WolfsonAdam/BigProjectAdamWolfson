@@ -1,31 +1,33 @@
 #include "asmbler.h"
 
 
-int label_exist(char *label, ASSEMBLER_TABLE *assembler) {
+int label_exist(char *label,EXTERN_LIST * extern_head,LABEL_LIST *  label_head) {
     int result = 0;
 
     /* Check if the label is already defined in the label list */
-    while (!result && assembler->label_head != NULL)
+    while ( label_head != NULL)
     {
-        if (strcmp(label, (assembler)->label_head->label) == 0)
+        printf("%s  ",label_head->label);
+        if (strcmp(label,label_head->label) == 0)
         {
-
+            
             result = 1;
         }
-        assembler->label_head = assembler->label_head->next;
+        label_head = label_head->next;
     }
-
+    printf("\n");
     /* Check if the label is already defined in the extern list */
-    while (!result && assembler->extern_head != NULL)
+    while ( extern_head != NULL)
     {
-        if (strcmp(label, (assembler)->extern_head->label) == 0)
+        printf("%s  ",extern_head->label);
+        if (strcmp(label,extern_head->label) == 0)
         {
-
+            
             result = 1;
         }
-        assembler->extern_head = assembler->extern_head->next;
+       extern_head = extern_head->next;
     }
-
+    printf("\n");
     return result;
 }
 
@@ -42,8 +44,9 @@ int Second_Pass(ASSEMBLER_TABLE ** assembler_table , char * file_name , int IC ,
     while(ptr_mach_code != NULL){
          /* Check if the mila is marked for the second pass */
         if(ptr_mach_code->binary_code.binary == SECONDPASS){
+            printf("lable being checked is %s\n",ptr_mach_code->label);
             /* Verify if the label exists in either the label or extern list */
-            error_flag += !label_exist(ptr_mach_code->label,*assembler_table);
+            error_flag += !label_exist(ptr_mach_code->label,(*assembler_table)->extern_head,(*assembler_table)->label_head);
 
             /* Check if the label is in the label list */
             while(ptr_label != NULL){
@@ -89,7 +92,7 @@ int Second_Pass(ASSEMBLER_TABLE ** assembler_table , char * file_name , int IC ,
     if(error_flag == 0) {
         makeFiles(assembler_table,file_name,IC,DC);
     }
-
+    printf("error flag is %d",error_flag);
     return  error_flag;
 }
 void printFormatedLine(FILE * filePtr,unsigned int info , int adr) {

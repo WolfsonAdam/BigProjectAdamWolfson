@@ -35,7 +35,8 @@ void insert_address_list(ADDRESS_Node **address_list, int address){
     }
 
 }
-void insert_Label_List(LABEL_LIST **label_list, char *label, int address){
+
+void insert_Label_List(ASSEMBLER_TABLE **assembler , char *label, int address) {
     LABEL_LIST *ptr;
     LABEL_LIST *new_node ;
 
@@ -45,20 +46,24 @@ void insert_Label_List(LABEL_LIST **label_list, char *label, int address){
     /* Initialize the new label node */
     memset(new_node->label, '\0', sizeof(new_node->label));
     strcpy(new_node->label, label);
-    new_node->label[MAXLABLE - 1] = '\0';
+    
     new_node->addr_list->adr = address;
     new_node->addr_list->next = NULL;
     new_node->next = NULL;
-
+    printf("current lable is %s\n",label);
     /* If the list is empty, set the new node as the head */
-    if (*label_list == NULL)
-    {
-        *label_list = new_node;
+    if ((*assembler)->label_head == NULL)
+    {   
+        
+        printf("list empty \n");
+        (*assembler)->label_head = new_node;
+       
 
     } else
     {
+        printf("not empty \n");
         /* Traverse the list to find the last node */
-        ptr = *label_list;
+        ptr = (*assembler)->label_head;
         while (ptr->next != NULL)
         {
             ptr = ptr->next;
@@ -68,7 +73,6 @@ void insert_Label_List(LABEL_LIST **label_list, char *label, int address){
     }
 
 }
-
 void insert_Entry_List(ENTRY_LIST **entry_list, char *label) {
     ENTRY_LIST *ptr;
     ENTRY_LIST *new_node;
@@ -184,12 +188,12 @@ int convert_string(MACHINE_CODE_INSTRUCTION **instruction_list, char *word, int 
         int_to_mila(word[i], &current);
         add_to_instruction_list(instruction_list , *address , current);/* Add character as instruction */
         (*address)++;
-        printf("mila is %x\n",current.binary);
+        
     }
     /* Add a terminating null character (MILA = 0) at the end of the string */
     int_to_mila(0, &current);
     add_to_instruction_list(instruction_list , *address , current);
-    printf("mila is %x\n",current.binary);
+    
     (*address)++;
     return 1;
 }
@@ -245,38 +249,41 @@ int examin_label(char *word,int line_count) {
 int compare_label_with_other_lists(char *label, ASSEMBLER_TABLE *assembler)
 {
     int result = 1;
-
+    LABEL_LIST * ptr_label = (assembler)->label_head;
+    EXTERN_LIST * ptr_extern = (assembler)->extern_head;
+    
+    MACRO_LIST_NODE * ptr_macro = (assembler)->macro_head;
     /* Check if the label is already defined in the macro list */
-    while (result && assembler->macro_head != NULL)
+    while (result && ptr_macro != NULL)
     {
-        if (strcmp(label, assembler->macro_head->macro_name) == 0)
+        if (strcmp(label, ptr_macro->macro_name) == 0)
         {
             printf("%s %s\n",label, "LABEL_ALREADY_DEFINED");
             result = 0;
         }
-        assembler->macro_head = assembler->macro_head->next;
+        ptr_macro = ptr_macro->next;
     }
 
     /* Check if the label is already defined in the label list */
-    while (result && assembler->label_head != NULL)
+    while (result && ptr_label != NULL)
     {
-        if (strcmp(label, (assembler)->label_head->label) == 0)
+        if (strcmp(label, ptr_label->label) == 0)
         {
             printf("%s %s\n",label, "LABEL_ALREADY_DEFINED");
             result = 0;
         }
-        assembler->label_head = assembler->label_head->next;
+        ptr_label = ptr_label->next;
     }
 
     /* Check if the label is already defined in the extern list */
-    while (result && assembler->extern_head != NULL)
+    while (result && ptr_extern != NULL)
     {
-        if (strcmp(label, (assembler)->extern_head->label) == 0)
+        if (strcmp(label, ptr_extern->label) == 0)
         {
             printf("%s %s\n",label, "LABEL_ALREADY_DEFINED");
             result = 0;
         }
-        assembler->extern_head = assembler->extern_head->next;
+        ptr_extern = ptr_extern->next;
     }
 
 
@@ -403,7 +410,7 @@ int number_Examine(char * word,int line_counter) {
     }
     for(; i <strlen(word); i++) {
         if(!isdigit(word[i])) {
-            printf("current char %c\n",word[i]);
+            
             result=0;
             printf("%s is not a valid number error in line %d\n", word, line_counter);
             return result;
@@ -433,7 +440,7 @@ int extract_Data(MACHINE_CODE_INSTRUCTION **instruction_list, char *line, int *a
 
         int_to_mila(atoi(number),&mila);
         add_to_instruction_list(instruction_list , *address , mila);
-        printf("mila is %x\n",mila.binary);
+        
         skip+=get_word(line+skip,comma);
         (*address)++;
         if(comma[0] != ',' && comma[0]!='\0') {
@@ -490,7 +497,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
 
         insert_Command_List(command_list, *IC, lable, new_mila, type_src);
         (*IC)++;
-        printf("mila is %x\n", new_mila.binary);
+        
 
     }
     /* ONE OPRAND COMMANDS */
@@ -507,7 +514,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         /* adds the command binarry code to the list */
         insert_Command_List(command_list, *IC, lable, new_mila, type_src);
         (*IC)++;
-        printf("mila is %x\n", new_mila.binary);
+        
         /* if number add the number in the next binary code  if lable or addres add them in second pass cause might not be defined yet */
        if(type_dest == NUMBER) {
 
@@ -546,7 +553,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         }
         insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
         (*IC)++;
-        printf("mila is %x\n", new_mila.binary);
+        
 
         if(type_src == NUMBER) {
 
@@ -562,7 +569,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         if(type_src != REGISTER) {
             insert_Command_List(command_list, *IC, lable, new_mila, type_src);
             (*IC)++;
-            printf("mila is %x\n", new_mila.binary);
+            
         }
 
     
@@ -580,7 +587,7 @@ void Mila(MACHINE_CODE_COMMAND **command_list, int command_code, char *src_op, i
         if(type_dest != REGISTER) {
             insert_Command_List(command_list, *IC, lable, new_mila, type_dest);
             (*IC)++;
-            printf("mila is %x\n", new_mila.binary);
+            
         }
 
     }
@@ -892,7 +899,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
         /* If no label error, determine the line type (directive or command) */
         if (!error  )
         {   
-            printf("line : %d\n------------------------\n",line_counter);
+            
             
             type = first_pass_line_type(word, commands,&command);
         }
@@ -904,6 +911,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
 
                     if (label_skip )
                     {
+
                         /* Add the label to the label list with IC + DC */
                         /* reread the instruction they arent 100% clear so im not sure if to add this
                         insert_Label_List(&((*assembler)->label_head), label, IC + DC );
@@ -942,7 +950,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
 
                     if (label_skip )
                     {
-                        insert_Label_List(&((*assembler)->label_head), label, *IC + *DC - 1);
+                        insert_Label_List(assembler, label, *IC + *DC - 1);
                     }
                 /* Examine the .string directive for errors */
                 get_word(line +skip,oprand);
@@ -956,7 +964,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
                     if (label_skip )
                     {
                         /* Add the label to the label list */
-                        insert_Label_List(&((*assembler)->label_head), label,*IC + *DC - 1);
+                        insert_Label_List(assembler, label,*IC + *DC - 1);
                     }
                 /* Examine the .data directive for errors */
                 error = !extract_Data(&((*assembler)->instruction_head), line + skip, DC,line_counter);
@@ -969,11 +977,11 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
                         {
                             
                             /* Add the label to the label list with IC */
-                            insert_Label_List(&((*assembler)->label_head), label, *IC );
+                            insert_Label_List(assembler, label, *IC );
                         }
                 /* Examine the command for errors and add to command list */
                         
-                   error = !convert_Command(&((*assembler)->command_head), registers, line + skip, command, &IC , line_counter);
+                   error = !convert_Command(&((*assembler)->command_head), registers, line + skip, command, IC , line_counter);
 
                 break;
 
@@ -1003,7 +1011,7 @@ int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) {
             memset(line, '\0', sizeof(line));
             memset(word, '\0', sizeof(word));
             memset(oprand, '\0', sizeof(oprand));
-            printf("----------------\n");
+            
         }
         /* Close the file after processing */
         fclose(fptr);

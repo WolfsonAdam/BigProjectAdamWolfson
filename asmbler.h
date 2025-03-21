@@ -286,7 +286,7 @@ void insert_address_list(ADDRESS_Node **address_list, int address);
  label Name of the label to be added.
  address The address associated with the label.
  */
-void insert_Label_List(LABEL_LIST **label_list, char *label, int address);
+ void insert_Label_List(ASSEMBLER_TABLE **assembler , char *label, int address);
 
 /*
   This function allocates memory for a new ENTRY_LIST node and appends it to the end
@@ -380,7 +380,7 @@ int convert_Command(MACHINE_CODE_COMMAND **command_list,  char **registers, char
 
 int firstpass(ASSEMBLER_TABLE **assembler, char *file_name ,int* IC ,int* DC) ;
 
-int label_exist(char *label, ASSEMBLER_TABLE *assembler);
+int label_exist(char *label,EXTERN_LIST * extern_head,LABEL_LIST *  label_head);
 
 void printFormatedLine(FILE * filePtr,unsigned int info , int adr);
 
